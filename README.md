@@ -1,1 +1,2 @@
-# essential-workers-vacccine
+# Strategies for vaccine allocation with essential workers
+
