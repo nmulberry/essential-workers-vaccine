@@ -11,7 +11,7 @@ theme_set(theme_light())
 
 source('../vaccine-model.R') # main model & simulation funcs
 source('../utils.R') 
-source('../contact_matrix.R')
+source('../contact-matrix.R')
 
 # BUILD CONTACT MATRIX
 p_ess <- c(0.0,0.0,0.1705,0.2043,0.1675,0.1536,0.1642,0.1069, 0.0) 
@@ -104,16 +104,14 @@ run_over_scen_2 = function(R, ve, vp, scen,alpha=0.0){
 
    df0 <- run_sim_basic(C, I_0=I_0, percent_vax =1.0, strategy=list(9), num_perday=n,
                         v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
-                        u = u_var, sero = sero_none,
-                        syn_sero_compartments=NA, num_days=T1, with_essential=TRUE, H=H) 
+                        u = u_var, num_days=T1, with_essential=TRUE, H=H) 
    # Final stage
    n <- sum(age_demo[-9])/T2
    C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
                               target_R0=R, in_school=TRUE, alpha_factor=alpha)
    df <- run_sim_restart(C, df_0=tail(df0, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
                          v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
-                         u = u_var, sero = sero_none, 
-                         syn_sero_compartments=NA, num_days=T2, with_essential=TRUE, H=H)
+                         u = u_var, num_days=T2, with_essential=TRUE, H=H)
    # combine 
    df$time <- df$time+T1+1
    df <- combine_age_groups(rbind(df0,df))
@@ -141,8 +139,7 @@ run_over_scen = function(R, ve, vp, scen, n, alpha=0.0){
     
    df <- run_sim_basic(C, I_0=I_0, percent_vax =1.0, strategy= alt_strategies[[scen]], num_perday=n,
                            v_e = rep(ve, num_groups),v_p=rep(vp, num_groups),
-                           u = u_var, sero = sero_none, 
-                           syn_sero_compartments=NA, num_days=T, with_essential=TRUE, H=H)
+                           u = u_var, num_days=T, with_essential=TRUE, H=H)
 
    df <- combine_age_groups(df)
    df$R0 <- R

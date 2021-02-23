@@ -137,15 +137,13 @@ run_over_C_2 = function(R, alpha,ve, vp, scen,iter){
 
    df0 <- run_sim_basic(C, I_0=I_0, percent_vax =1.0, strategy=list(9), num_perday=n,
                         v_e_type="aorn", v_e = rep(ve, num_groups),
-                        u = u_var, sero = sero_none, sp=1 , se=0,
-                        syn_sero_compartments=NA, num_days=T1, ve_p=rep(vp, num_groups), with_essential=TRUE, H=H) 
+                        u = u_var, num_days=T1, v_p=rep(vp, num_groups), with_essential=TRUE, H=H) 
    # Final stage
    n <- sum(age_demo[-9])/T2
    C <- C*R/compute_R0(u_var,C)
    df <- run_sim_restart(C, df_0=tail(df0, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
                          v_e_type="aorn", v_e = rep(ve, num_groups),
-                         u = u_var, sero = sero_none, sp=1 , se=0,
-                         syn_sero_compartments=NA, num_days=T2, ve_p=rep(vp, num_groups), with_essential=TRUE, H=H)
+                         u = u_var, num_days=T2, v_p=rep(vp, num_groups), with_essential=TRUE, H=H)
    # combine 
    df$time <- df$time+T1+1
    df <- combine_age_groups(rbind(df0,df))

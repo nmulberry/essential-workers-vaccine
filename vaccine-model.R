@@ -1,7 +1,6 @@
 
 run_sim_basic = function(C, I_0, percent_vax, strategy, num_perday, v_e, v_p,
-                       u = u_var, sero = sero_none, syn_sero_compartments = NA, 
-                        num_days=365,H=rep(0,num_groups), 
+                       u = u_var, num_days=365,H=rep(0,num_groups), 
                         with_essential=FALSE,set_vax_prop=NULL,p_grp=NULL){
   # BASED ON run_sim from Bubar et al.
   # Vaccine rollout is continuous until all vaccines are distributed
@@ -24,9 +23,6 @@ run_sim_basic = function(C, I_0, percent_vax, strategy, num_perday, v_e, v_p,
   if (!nrow(C)==num_groups){
     warning("wrong dimensions in C")
   }
-  if (!length(sero)==num_groups){
-    warning("wrong dimensions in sero")
-  }
   if (!length(I_0)==num_groups){
     warning("wrong dimensions in I_0")
   }
@@ -38,7 +34,7 @@ run_sim_basic = function(C, I_0, percent_vax, strategy, num_perday, v_e, v_p,
 
   # Initialize
   E_0 <- Ev_0 <- Ex_0 <- Sv_0 <- Sx_0 <- Iv_0 <- Ix_0 <- Rv_0 <- Rx_0 <- D_0 <- rep(0, num_groups)
-  R_0 <- N_i * sero
+  R_0 <-rep(0,num_groups)
   E_0 = (3/5)*(I_0) # was 0 but this makes incidence start at 0 and prevalence start by falling
   S_0 <- N_i - I_0 - R_0 - E_0
   num_stages <- length(strategy)
@@ -49,9 +45,7 @@ run_sim_basic = function(C, I_0, percent_vax, strategy, num_perday, v_e, v_p,
 
   compartments_initial <- c(S_0,Sv_0,Sx_0,E_0,Ev_0,Ex_0,I_0,Iv_0,Ix_0,R_0,Rv_0,Rx_0,D_0)
 
-  if (length(syn_sero_compartments) > 1){
-    compartments_initial <- syn_sero_compartments
-  }
+
   vax_supply <- percent_vax*pop_total
 
   out <- move_vaccinated_BC(compartments_initial, strategy=strategy, stage=1, num_perday, vax_supply,
@@ -303,7 +297,7 @@ move_vaccinated_BC = function(x, strategy, stage, num_perday, vax_supply, v_e, H
 
 
 run_sim_restart = function(C, df_0, percent_vax, strategy, num_perday,  v_e, v_p,
-                       u = u_var, sero = sero_none, syn_sero_compartments = NA, num_days=365, H=rep(0,num_groups), 
+                       u = u_var, num_days=365, H=rep(0,num_groups), 
                       with_essential=FALSE,set_vax_prop=NULL, p_grp=NULL){
   # EXACT SAME as run_sim_basic except initialize with a dataframe (from previous output)
   # df_0 should just be the last time stamp from previous sim
@@ -323,9 +317,7 @@ run_sim_restart = function(C, df_0, percent_vax, strategy, num_perday,  v_e, v_p
   if (!nrow(C)==num_groups){
     warning("wrong dimensions in C")
   }
-  if (!length(sero)==num_groups){
-    warning("wrong dimensions in sero")
-  }
+
 
   # Disease Tranmission
   d_E <- 1/3 # incubation period (E -> I), ref: Davies
