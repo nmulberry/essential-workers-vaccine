@@ -1,7 +1,7 @@
 # Strategies for vaccine allocation with essential workers
 
 This analysis accompanies the text, *Vaccine Rollout Strategies: The Case for Vaccinating Essential Workers Early* (Mulberry et al., 2021). 
-The preprint is [here](https://github.com/nmulberry/essential-workers-vaccine/vaccine_rollout_preprint.pdf).
+The preprint is [here](https://github.com/nmulberry/essential-workers-vaccine/blob/main/vaccine_rollout_preprint.pdf)
 
 The core model and simulation functions are adapted from [Bubar et al.](https://github.com/kbubar/vaccine_prioritization). 
 
