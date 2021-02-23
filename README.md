@@ -1,7 +1,12 @@
 # Strategies for vaccine allocation with essential workers
 
 This analysis accompanies the text, *Vaccine Rollout Strategies: The Case for Vaccinating Essential Workers Early* (Mulberry et al., 2021). 
-The preprint is [here](https://github.com/nmulberry/essential-workers-vaccine/blob/main/vaccine_rollout_preprint.pdf)
+The preprint is [here](https://github.com/nmulberry/essential-workers-vaccine/blob/main/vaccine_rollout_preprint.pdf).
+
+## Abstract 
+In planning for upcoming mass vaccinations against COVID-19, many jurisdictions have proposed using primarily age-based rollout strategies, where the oldest are vaccinated first and the youngest last. In the wake of growing evidence that approved vaccines are effective at preventing not only adverse outcomes, but also infection (and hence transmission of SARS-CoV-2), we propose that such age-based rollouts are both less equitable and less effective than strategies that prioritize essential workers. We demonstrate using modelling that strategies that target essential workers earlier consistently outperform those that do not, and that prioritizing essential workers provides a significant level of indirect protection for older adults. This conclusion holds  across numerous outcomes, including cases, hospitalizations, deaths, prevalence of Long COVID, chronic impacts of COVID, quality adjusted life years lost and net monetary benefit lost. It also holds over a range of possible values for the efficacy of vaccination against infection. Our analysis focuses on regimes where the pandemic continues to be controlled with distancing and other measures as vaccination proceeds, and where the vaccination strategy is expected to last for over the coming 6-8 months --- for example British Columbia, Canada. In such a setting with a total population of 5M, vaccinating essential workers sooner is expected to prevent over 200,000 infections, over 600 deaths, and to produce a net monetary benefit  of over $500M. 20-25% of the quality adjusted life years lost, and 28--34% of the net monetary benefit lost, are due to chronic impacts of COVID-19.
+
+The preprint is [here](https://github.com/nmulberry/essential-workers-vaccine/blob/main/vaccine_rollout_preprint.pdf).
 
 The core model and simulation functions are adapted from [Bubar et al.](https://github.com/kbubar/vaccine_prioritization). 
 
