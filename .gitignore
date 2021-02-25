@@ -3,6 +3,8 @@
 
 analysis/figures/*
 generated-data/*
-
+*.rds
+*.RData
+*.RDS
 
 
