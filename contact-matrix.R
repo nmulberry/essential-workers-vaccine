@@ -71,6 +71,82 @@ generate_contact_matrix = function(p_ess, age_demo_by_fives){
 
 }
 
+generate_contact_matrix_fsa = function(p_ess_fsa,pop_total_fsa, age_demo_by_fives){
+p_ess= p_ess_fsa
+    age_demo <- age_toTens(age_demo_by_five)
+  pop_total_on <- sum(age_demo)
+ age_demo = round(age_demo*pop_total_fsa/pop_total_on)
+ pop_total = sum(age_demo)
+  
+  # Re-organize the demographics
+  num_per_age <- age_demo[1:9]
+  num_essential <- num_per_age*p_ess
+  new_age_demo <-c(num_per_age - num_essential, #num wfh
+                   num_essential[3:8], #num essential (20-79)
+                   pop_total*pop_total)/pop_total 
+  
+  # proportion of each grp over its age grp
+  prop_by_grp <- c(1-num_essential/num_per_age, num_essential[3:8]/num_per_age[3:8])
+  num_per_grp <- head(new_age_demo,-1)*pop_total
+  
+  
+  # LOAD IN PREM CONTACT MATRICES
+  mu_home <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_home.csv", sep=",", header=FALSE))
+  mu_work <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_work.csv", sep=",", header=FALSE))
+  mu_school <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_school.csv", sep=",", header=FALSE))
+  mu_other <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_other.csv", sep=",", header=FALSE)) 
+  
+  
+  # put each matrix into 10 yr age bins using BC demographics
+  # add 80+ compartment according to Bubar model
+  mu_home <- add_80bin(matrix_toTens(mu_home, age_demo_by_five))
+  mu_work <- add_80bin(matrix_toTens(mu_work, age_demo_by_five))
+  mu_school <- add_80bin(matrix_toTens(mu_school, age_demo_by_five))
+  mu_other <- add_80bin(matrix_toTens(mu_other, age_demo_by_five))
+  
+  
+  # Look at est. total num contacts & enforce symmetry here
+  mu_home_total <- 0.5*(mu_home*num_per_age + t(mu_home*num_per_age))
+  mu_work_total <- 0.5*(mu_work*num_per_age + t(mu_work*num_per_age))
+  mu_school_total <- 0.5*(mu_school*num_per_age + t(mu_school*num_per_age))
+  mu_other_total <- 0.5*(mu_other*num_per_age + t(mu_other*num_per_age))
+  
+  
+  # Add essential worker comparments
+  mu_home_essential <- matrix_addEssential(mu_home_total, prop_by_grp)/num_per_grp
+  mu_school_essential <- matrix_addEssential(mu_school_total, prop_by_grp)/num_per_grp
+  mu_other_essential <- matrix_addEssential(mu_other_total, prop_by_grp)/num_per_grp
+  mu_work_essential <- matrix_addEssential(mu_work_total, prop_by_grp)
+  
+  # For 70-79, and 80+..move all work compartments to essential 
+  # also fudge
+  mu_work_essential['70-79', 10:14] <- 1*(mu_work_essential['70-79', 10:14] + mu_work_essential['70-79', 3:7])
+  mu_work_essential[10:14,'70-79'] <- 1*(mu_work_essential[10:14,'70-79'] + mu_work_essential[3:7,'70-79'])
+  mu_work_essential['70-79', 3:7] <- 0.0
+  mu_work_essential[3:7,'70-79'] <- 0.0
+  mu_work_essential['80+', 10:15] <- 1*(mu_work_essential['80+', 10:15] + mu_work_essential['80+', 3:8])
+  mu_work_essential[10:15,'80+'] <- 1*(mu_work_essential[10:15,'80+'] + mu_work_essential[3:8,'80+'])
+  mu_work_essential['80+', 3:8] <- 0.0
+  mu_work_essential[3:8,'80+'] <- 0.0
+  
+  mu_work_essential <- mu_work_essential/num_per_grp
+  # SAVE
+#  saveRDS(mu_home_essential, "~/essential-workers-vaccine/generated-data/mu_home_essential.rds")
+#  saveRDS(mu_work_essential, "~/essential-workers-vaccine/generated-data/mu_work_essential.rds")
+#  saveRDS(mu_school_essential, "~/essential-workers-vaccine/generated-data/mu_school_essential.rds")
+#  saveRDS(mu_other_essential, "~/essential-workers-vaccine/generated-data/mu_other_essential.rds")
+#  saveRDS(new_age_demo, "~/essential-workers-vaccine/generated-data/age_demographics_essential.rds")
+  return(list(mu_home = mu_home_essential,
+              mu_work = mu_work_essential,
+              mu_school = mu_school_essential, 
+              mu_other = mu_other_essential,
+              age_demo = new_age_demo))
+}
+
+
+
+
+
 age_toTens = function(x){
   # helper func to convert to tens
   res <- rep(0, 9)

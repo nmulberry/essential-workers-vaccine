@@ -331,9 +331,14 @@ run_sim_restart = function(C, df_0, percent_vax, strategy, num_perday,  v_e, v_p
   check <- function(i){
     return(sum(df_0[1:num_groups][strategy[[i]]]) > sum(H[strategy[[i]]]))
   }
+not.done.yet= sapply(1:num_stages, check)
+if (any(not.done.yet)) {
   stage <- min(which(
     sapply(1:num_stages, check),
-    arr.ind=T))
+    arr.ind=T)) 
+} else {
+    num_perday=0
+    stage=1 }
 
   # starting group to vaccinate
   groups <- strategy[[stage]]
