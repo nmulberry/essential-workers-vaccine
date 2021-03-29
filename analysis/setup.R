@@ -13,8 +13,8 @@ source('../vaccine-model.R') # main model & simulation funcs
 source('../utils.R') 
 source('../contact-matrix.R')
 PATH='~/essential-workers-vaccine/' # set absolute path 
-dir.create(paste0(PATH, 'generated-data'))
-dir.create(paste0(PATH, 'figures'))
+dir.create(paste0(PATH, 'generated-data'),showWarnings = FALSE)
+dir.create(paste0(PATH, 'figures'),showWarnings = FALSE)
 # BUILD CONTACT MATRIX
 p_ess <- c(0.0,0.0,0.1705,0.2043,0.1675,0.1536,0.1642,0.1069, 0.0) 
 age_demo_by_five <- as.matrix(readr::read_csv(paste0(PATH,'data/Population_Estimates.csv')))
