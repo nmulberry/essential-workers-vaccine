@@ -24,6 +24,37 @@ total_cases = function(df) {
 }
 
 
+total_cases_origin = function(df, ifr=IFR, ihr = IHR, hosp_efficacy=vp) {
+# note -- the D group doesn't track whether the individual was vaccinated or not
+# this makes counting the cases and splitting by whether they were vaccinated 
+  # challenging
+  
+# however, the deaths are just like the R but R has (1-IFR) and D has IFR
+# so if I take the Rs and multiply by 1/(1-IFR) i will get the totals 
+
+  ind = grep("R", names(df))
+  ind2=grep("Rv", names(df)) # Rv 
+  ind3=grep("Rx", names(df)) # Rx 
+  ind1=setdiff(ind, c(ind2, ind3)) # just R 
+  ifr = ifr[1:length(ind1)] # 9 age groups, df is collected to not have ew, IFR has all 15
+  ihr = ihr[1:length(ind1)]
+  lastrow =tail(df,n=1)
+age_names = c("0-9","10-19","20-29","30-39","40-49","50-59","60-69","70-79","80+")
+dd1 =data.frame(age_band =age_names , 
+                cases= as.numeric(lastrow[ind1]*(1/(1-ifr))), 
+                hosp = as.numeric(lastrow[ind1]*ihr), 
+                 prot = "unvac") # unvax, by age 
+dd2 = data.frame(age_band =age_names ,
+                 cases= as.numeric(lastrow[ind2]*(1/(1-ifr))),
+                 hosp = as.numeric(lastrow[ind1]*ihr*(1-hosp_efficacy)), 
+                 prot="vac") # vax, by age 
+dd3 = data.frame(age_band =age_names, 
+                 cases= as.numeric(lastrow[ind3]*(1/(1-ifr))),
+                 hosp = as.numeric(lastrow[ind1]*ihr*(1-hosp_efficacy)), 
+                 prot="vac, not protected") # vax unprot, by age 
+return(rbind(dd1,dd2,dd3))
+}
+
 total_hosp = function(df, ihr = IHR, hosp_efficacy=v_e_constant) {
   ind = grep("R", names(df))
   scalevec=c(IHR, (1-hosp_efficacy)*IHR, (1-hosp_efficacy)*IHR) 
@@ -278,6 +309,9 @@ extract_cases_deaths <- function(output, LCFAC=1) {
   mydatC$long = mydatF$long
     return(mydatC)
 }
+
+# like extract_cases_deaths, but keeping track of whether they're vax'd or not
+
 
 
 get_hosp <- function(r_col, thishr, thisdi= 1/5,thisdh = 10) {

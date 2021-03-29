@@ -30,13 +30,41 @@ H=0.25*H
 # but for now let's use it. that is a hosp of  37*pop_total/1e5 # of 5500
 # but Dec numbers on the website were more like 1600, probably a more reasonable threshold
 
-test1 = run_over_scen_3(1.1, 2.25, trytime = 120,T2=720)
-test2 = run_over_scen_3(1.1, 2.25, trytime = 210,T2=720)
+test1 = run_over_scen_3(1.1, 2.5, trytime = 120,T2=720)
+test2 = run_over_scen_3(1.1, 2.5, trytime = 210,T2=720)
 
-tmp = compare_sims(test1, test2,textsize = 10)
+tmp = compare_sims(test1, test2,textsize = 10, 
+                   name1 = "July reopening", name2 = "Sept. reopening")
 ggarrange(plotlist = tmp[1:2], nrow=1)
 
-run_over_scen_3 = function(R1, R2, trytime,T2=210, ve=0.75, vp=0.9,  scen=1,alpha=0.0){
+ggsave("reopen-july-sept-slowvax.pdf", height = 4, width = 12)
+
+
+
+test1 = run_over_scen_3(1.1, 2.5, trytime = 120,T2=720,speedup = 2)
+test2 = run_over_scen_3(1.1, 2.5, trytime = 210,T2=720,speedup = 2)
+tmp = compare_sims(test1, test2,textsize = 10, 
+                   name1 = "July reopening", name2 = "Sept. reopening")
+ggarrange(plotlist = tmp[1:2], nrow=1)
+
+ggsave("reopen-july-sept-fastvax.pdf", height = 4, width = 12)
+
+# this is counter-intuitive. Vaccinating faster now means more people are left unprotected
+# resulting in a bigger peak in 2022 than if we vaccinate slowly now
+
+# so now I want to know something about the numbers naturally infected vs vaccinated and unprotected
+# vs vaccinated - appearing in infections and hosp, by age.
+# for this i need another utils function like extract_cases_deaths 
+
+dd=total_cases_origin(test2)
+ggplot(dd, aes(x=age_band, y=cases, fill=prot)) + geom_bar(stat="identity")
+ggplot(dd, aes(x=age_band, y=hosp, fill=prot)) + geom_bar(stat="identity")
+
+
+
+# define 3-stage function 
+run_over_scen_3 = function(R1, R2, trytime,T2=210,
+                           ve=0.75, vp=0.9,  scen=1,speedup=1, alpha=0.0){
     T1 <- 60
 #    T2 <- 360
     # Initial stage (vax all 80+)
@@ -50,7 +78,7 @@ run_over_scen_3 = function(R1, R2, trytime,T2=210, ve=0.75, vp=0.9,  scen=1,alph
                          u = u_var, num_days=T1, with_essential=TRUE, H=H) 
 
         # next stage : R moves to R1 and rate increases
-    n <- sum(age_demo[-9])/210
+    n <- speedup*sum(age_demo[-9])/210
     C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
                                target_R0=R1, in_school=TRUE, alpha_factor=alpha)
     df1 <- run_sim_restart(C, df_0=tail(df0, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
@@ -70,14 +98,15 @@ run_over_scen_3 = function(R1, R2, trytime,T2=210, ve=0.75, vp=0.9,  scen=1,alph
     df <- combine_age_groups(rbind(df0,df1,df))
 
     # add pars
-    df$R1 <- R1
-    df$R2 <- R2
+    df$r1 <- R1
+    df$r2 <- R2
     df$trytime = trytime
     df$ve <- ve
     df$vp <- vp
     df$type <- labels[[scen]]
     df$scen <- scen
     df$alpha <- alpha
-    return(df)}
+    return(df)
+    }
 
 
