@@ -1,6 +1,6 @@
 tsize <- 16
 R_vec <- c(1.15,1.3) # R vals to plot
-data = readxl::read_xlsx("~/essential-workers-vaccine/data/tupper_QALY_dollars.xlsx")
+data = readxl::read_xlsx(paste0(PATH,"data/tupper_QALY_dollars.xlsx"))
 
 new_yll <- data$`QALYs lost to death` # goes into q1
 caseqalyfactor <- data$`QALD lost per community case` # into q2
@@ -31,7 +31,7 @@ ggplot(data=filter(qalys_res, R %in% R_vec), aes(x=type,y=qaly,fill=Source))+
     ylab("Health loss (QALYs)")+
     scale_fill_brewer(palette = "Paired") 
 
-ggsave("figures/qalybars.pdf",height=7, width=10)
+ggsave(paste0(PATH,"figures/qalybars.pdf"),height=7, width=10)
 
 # COST
 chroniccost <- data$`cost of chronic condition max 25 years`
@@ -60,7 +60,7 @@ ggplot(data=filter(cost_res, R %in% R_vec), aes(x=type,y=Cost/1e6,fill=Source))+
     ylab("NMB loss (millions)")+
     scale_fill_brewer(palette = "Paired") 
 
-ggsave("figures/costbars.pdf",height=7, width=10)
+ggsave(paste0(PATH,"figures/costbars.pdf"),height=7, width=10)
 
 
 ggplot(data=filter(cost_res, R %in% R_vec, type != labels[1]), aes(x=type,y=Savings/1e6,fill=Source))+
@@ -73,7 +73,7 @@ ggplot(data=filter(cost_res, R %in% R_vec, type != labels[1]), aes(x=type,y=Savi
     scale_fill_brewer(palette = "Paired") 
 
 
-ggsave("figures/savingsbars.pdf",height=7, width=10)
+ggsave(paste0(PATH,"figures/savingsbars.pdf"),height=7, width=10)
 
 
  

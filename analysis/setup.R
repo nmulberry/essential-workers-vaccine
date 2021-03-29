@@ -12,22 +12,24 @@ theme_set(theme_light())
 source('../vaccine-model.R') # main model & simulation funcs
 source('../utils.R') 
 source('../contact-matrix.R')
-
+PATH='~/essential-workers-vaccine/' # set absolute path 
+dir.create(paste0(PATH, 'generated-data'))
+dir.create(paste0(PATH, 'figures'))
 # BUILD CONTACT MATRIX
 p_ess <- c(0.0,0.0,0.1705,0.2043,0.1675,0.1536,0.1642,0.1069, 0.0) 
-age_demo_by_five <- as.matrix(readr::read_csv('~/essential-workers-vaccine/data/Population_Estimates.csv'))
+age_demo_by_five <- as.matrix(readr::read_csv(paste0(PATH,'data/Population_Estimates.csv')))
 generate_contact_matrix(p_ess, age_demo_by_five) #build
 
-age_demo <- readRDS("~/essential-workers-vaccine/generated-data/age_demographics_essential.rds")
-mu_home <- readRDS("~/essential-workers-vaccine/generated-data/mu_home_essential.rds")
-mu_work <- readRDS("~/essential-workers-vaccine/generated-data/mu_work_essential.rds")
-mu_school <- readRDS("~/essential-workers-vaccine/generated-data/mu_school_essential.rds")
-mu_other <-  readRDS("~/essential-workers-vaccine/generated-data/mu_other_essential.rds")
+age_demo <- readRDS(paste0(PATH,"generated-data/age_demographics_essential.rds"))
+mu_home <- readRDS(paste0(PATH,"generated-data/mu_home_essential.rds"))
+mu_work <- readRDS(paste0(PATH,"generated-data/mu_work_essential.rds"))
+mu_school <- readRDS(paste0(PATH,"generated-data/mu_school_essential.rds"))
+mu_other <-  readRDS(paste0(PATH,"generated-data/mu_other_essential.rds"))
 
 # RATES (10-yr age bins, 0-9,10-19,...,80+)
-YLL_vec <- readRDS("~/essential-workers-vaccine/data/yll_vec_CAN.RData")
-IFR <- readRDS("~/essential-workers-vaccine/data/ifr_vec_CAN.RData")
-IHR <- readRDS("~/essential-workers-vaccine/data/ihr_vec_CAN.RData")
+YLL_vec <- readRDS(paste0(PATH,"data/yll_vec_CAN.RData"))
+IFR <- readRDS(paste0(PATH,"/data/ifr_vec_CAN.RData"))
+IHR <- readRDS(paste0(PATH,"/data/ihr_vec_CAN.RData"))
 
 # Symptom duration lognormal. log sigma=0.8. log  mu are 1.9, 2.2, 2.5, 2.8,
 # for ages under 30, 30-39, 40-49, over 50.

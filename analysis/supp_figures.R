@@ -56,7 +56,7 @@ g3 <- ggplot(res2,
                           axis.text.x = element_text(angle = 35,hjust = 1))
 
 ggarrange(g1,g2,g3, ncol=1, common.legend=TRUE, legend='bottom', align='v', heights = c(1,1,1.5))
-ggsave("figures/sensitivity-ve.pdf", width=14,height=10)
+ggsave(paste0(PATH,"figures/sensitivity-ve.pdf"), width=14,height=10)
 
 
 
@@ -120,7 +120,7 @@ g3 <- ggplot(res2,
                           axis.text.x = element_text(angle = 35,hjust = 1))
 
 ggarrange(g1,g2,g3, ncol=1, common.legend=TRUE, legend='bottom', align='v', heights = c(1,1,1.5))
-ggsave("figures/sensitivity-alpha.pdf", width=14,height=10)
+ggsave(paste0(PATH,"figures/sensitivity-alpha.pdf"), width=14,height=10)
 
 
 

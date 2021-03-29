@@ -23,10 +23,10 @@ generate_contact_matrix = function(p_ess, age_demo_by_fives){
 
 
   # LOAD IN PREM CONTACT MATRICES
-  mu_home <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_home.csv", sep=",", header=FALSE))
-  mu_work <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_work.csv", sep=",", header=FALSE))
-  mu_school <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_school.csv", sep=",", header=FALSE))
-  mu_other <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_other.csv", sep=",", header=FALSE)) 
+  mu_home <- as.matrix(read.csv(paste0(PATH, "data/mu_home.csv"), sep=",", header=FALSE))
+  mu_work <- as.matrix(read.csv(paste0(PATH, "data/mu_work.csv"), sep=",", header=FALSE))
+  mu_school <- as.matrix(read.csv(paste0(PATH,"data/mu_school.csv"), sep=",", header=FALSE))
+  mu_other <- as.matrix(read.csv(paste0(PATH,"data/mu_other.csv"), sep=",", header=FALSE))
 
 
   # put each matrix into 10 yr age bins using BC demographics
@@ -63,11 +63,11 @@ generate_contact_matrix = function(p_ess, age_demo_by_fives){
 
   mu_work_essential <- mu_work_essential/num_per_grp
   # SAVE
-  saveRDS(mu_home_essential, "~/essential-workers-vaccine/generated-data/mu_home_essential.rds")
-  saveRDS(mu_work_essential, "~/essential-workers-vaccine/generated-data/mu_work_essential.rds")
-  saveRDS(mu_school_essential, "~/essential-workers-vaccine/generated-data/mu_school_essential.rds")
-  saveRDS(mu_other_essential, "~/essential-workers-vaccine/generated-data/mu_other_essential.rds")
-  saveRDS(new_age_demo, "~/essential-workers-vaccine/generated-data/age_demographics_essential.rds")
+  saveRDS(mu_home_essential, paste0(PATH, "generated-data/mu_home_essential.rds"))
+  saveRDS(mu_work_essential, paste0(PATH, "generated-data/mu_work_essential.rds"))
+  saveRDS(mu_school_essential, paste0(PATH,"generated-data/mu_school_essential.rds"))
+  saveRDS(mu_other_essential, paste0(PATH, "generated-data/mu_other_essential.rds"))
+  saveRDS(new_age_demo, paste0(PATH,"generated-data/age_demographics_essential.rds"))
 
 }
 
@@ -91,10 +91,10 @@ p_ess= p_ess_fsa
   
   
   # LOAD IN PREM CONTACT MATRICES
-  mu_home <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_home.csv", sep=",", header=FALSE))
-  mu_work <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_work.csv", sep=",", header=FALSE))
-  mu_school <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_school.csv", sep=",", header=FALSE))
-  mu_other <- as.matrix(read.csv("~/essential-workers-vaccine/data/mu_other.csv", sep=",", header=FALSE)) 
+  mu_home <- as.matrix(read.csv(paste0(PATH,"data/mu_home.csv"), sep=",", header=FALSE))
+  mu_work <- as.matrix(read.csv(paste0(PATH,"data/mu_work.csv"), sep=",", header=FALSE))
+  mu_school <- as.matrix(read.csv(paste0(PATH,"data/mu_school.csv"), sep=",", header=FALSE))
+  mu_other <- as.matrix(read.csv(paste0(PATH,"data/mu_other.csv"), sep=",", header=FALSE))
   
   
   # put each matrix into 10 yr age bins using BC demographics
@@ -130,12 +130,7 @@ p_ess= p_ess_fsa
   mu_work_essential[3:8,'80+'] <- 0.0
   
   mu_work_essential <- mu_work_essential/num_per_grp
-  # SAVE
-#  saveRDS(mu_home_essential, "~/essential-workers-vaccine/generated-data/mu_home_essential.rds")
-#  saveRDS(mu_work_essential, "~/essential-workers-vaccine/generated-data/mu_work_essential.rds")
-#  saveRDS(mu_school_essential, "~/essential-workers-vaccine/generated-data/mu_school_essential.rds")
-#  saveRDS(mu_other_essential, "~/essential-workers-vaccine/generated-data/mu_other_essential.rds")
-#  saveRDS(new_age_demo, "~/essential-workers-vaccine/generated-data/age_demographics_essential.rds")
+
   return(list(mu_home = mu_home_essential,
               mu_work = mu_work_essential,
               mu_school = mu_school_essential, 

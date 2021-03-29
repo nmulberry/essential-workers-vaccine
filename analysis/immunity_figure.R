@@ -48,5 +48,5 @@ g2 <- ggplot(res2, aes(x=R, y=(cases_turn+vax_turn)/pop_total, group=type, col=t
   labs(x='R',y='Proportion of Population',col='Strategy')
 
 ggarrange(g1,g2, ncol=1, nrow=2, common.legend=TRUE, legend='bottom', labels=c("A","B"))
-ggsave("figures/immunity.pdf", width=16, height=10)
+ggsave(paste0(PATH,"figures/immunity.pdf"), width=16, height=10)
   

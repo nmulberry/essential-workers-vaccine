@@ -41,7 +41,7 @@ fig1b = ggarrange(ggarrange(plotlist=trajA, nrow=1, ncol=4, widths = c(1,1,1,1))
           nrow=2)
  
 ggarrange(fig1a, fig1b, nrow=2,heights = c(1, 1.6))
-ggsave("figures/fig-trajectories.pdf", width = 15, height = 10)      
+ggsave(paste0(PATH,"figures/fig-trajectories.pdf"), width = 15, height = 10)      
 
 
 ##########################
@@ -115,7 +115,7 @@ g4 <- ggplot(filter(res2, R %in% R_vec), aes(x=ve, y=long, group=type, fill=type
 
 bars <- ggarrange(g1,g2,g3,g4, ncol=2, nrow=2, common.legend=TRUE, legend='bottom', align='v')
 
-ggsave('figures/fig-barplots.pdf', width=14, height=10)
+ggsave(paste0(PATH,'figures/fig-barplots.pdf'), width=14, height=10)
 
 #####################
 # QALYs and Cost

@@ -24,7 +24,7 @@ ggplot(res2, aes(x=ve,y=vp, fill=type))+
   labs(x='Efficacy against infection', y='Efficacy against disease', fill='Strategy')+
   scale_fill_brewer(palette = "Dark2", drop=FALSE)
 
-ggsave("figures/heatmap_ve_vp.pdf")
+ggsave(paste0(PATH,"figures/heatmap_ve_vp.pdf"))
   
 
 
@@ -52,5 +52,5 @@ ggplot(res2, aes(x=ve,y=n, fill=type))+
   labs(x='Efficacy against infection', y='Vaccination rate', fill='Strategy')+
   scale_fill_brewer(palette = "Dark2", drop=FALSE)
 
-ggsave("figures/heatmap_ve_n.pdf")
+ggsave(paste0(PATH,"figures/heatmap_ve_n.pdf"))
   
