@@ -46,11 +46,11 @@ dd1 =data.frame(age_band =age_names ,
                  prot = "unvac") # unvax, by age 
 dd2 = data.frame(age_band =age_names ,
                  cases= as.numeric(lastrow[ind2]*(1/(1-ifr))),
-                 hosp = as.numeric(lastrow[ind1]*ihr*(1-hosp_efficacy)), 
+                 hosp = as.numeric(lastrow[ind2]*ihr*(1-hosp_efficacy)), 
                  prot="vac") # vax, by age 
 dd3 = data.frame(age_band =age_names, 
                  cases= as.numeric(lastrow[ind3]*(1/(1-ifr))),
-                 hosp = as.numeric(lastrow[ind1]*ihr*(1-hosp_efficacy)), 
+                 hosp = as.numeric(lastrow[ind2]*ihr*(1-hosp_efficacy)), 
                  prot="vac, not protected") # vax unprot, by age 
 return(rbind(dd1,dd2,dd3))
 }
