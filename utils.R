@@ -358,7 +358,7 @@ vax_immunity = function(df){
 #######################
 compare_sims <- function(sim1, sim2, name1="1", name2="2",
                              startDate = ymd("2021-01-10"), LCFAC=1,
-                             stages=NULL,textsize=16) {
+                             stages=NULL,textsize=16, scale_y=TRUE) {
   if (length(LCFAC)==1) {LCFAC1 = LCFAC; LCFAC2=LCFAC} 
   if (length(LCFAC)==2) {LCFAC1 = LCFAC[1]; LCFAC2=LCFAC[2]} 
 
@@ -366,31 +366,32 @@ compare_sims <- function(sim1, sim2, name1="1", name2="2",
   o3 = extract_cases_deaths(sim2,LCFAC = LCFAC2); o3$scen= name2
   oo = rbind(o1, o3); oo$scen=as.factor(oo$scen)
   oo$date = startDate + oo$time 
-
-  p1=  ggplot(data = oo, aes(x=date, y=incid, fill=age_band))+theme_light()+
+yscaler = ifelse(scale_y == TRUE, 1e5/pop_total, 1)
+ystr = ifelse(scale_y, "per 100K", "")
+  p1=  ggplot(data = oo, aes(x=date, y=incid*yscaler, fill=age_band))+theme_light()+
     facet_wrap(~scen,nrow = 1) +
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize))+
-    ylab("Incidence")
+    ylab(paste("Incidence", ystr))
   
-  p2=  ggplot(data = oo, aes(x=date, y=hosp, fill=age_band))+theme_light()+
+  p2=  ggplot(data = oo, aes(x=date, y=hosp*yscaler, fill=age_band))+theme_light()+
     facet_wrap(~scen,nrow = 1) +
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize))+
-    ylab("Hospitalizations")
+    ylab(paste("Hospitalizations", ystr))
   
-  p3 = ggplot(data = oo, aes(x=date, y=newdeaths, fill=age_band))+
+  p3 = ggplot(data = oo, aes(x=date, y=newdeaths*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
     theme_light()+
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize)) +
-    ylab("Daily deaths")
-  p4 = ggplot(data = oo, aes(x=date, y=long, fill=age_band))+
+    ylab(paste("Daily deaths",ystr))
+  p4 = ggplot(data = oo, aes(x=date, y=long*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
     theme_light()+
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize)) +
-    ylab("Long covid")
+    ylab(paste("Long covid",ystr))
   
   
   if (!is.null(stages)){
