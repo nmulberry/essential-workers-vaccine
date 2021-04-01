@@ -26,7 +26,7 @@ df1 <- run_sim_ramp_R(C, I_0=I_0, R_vec=R_vec,percent_vax =1.0, strategy=S, num_
 
 
 # run with constant R vec
-R_vec <- get_R_vec(R1=3.5, R2=1.5, start_ramp=30, end_ramp=60, ndays=T)
+R_vec <- get_R_vec(R1=1.5, R2=1.5, start_ramp=30, end_ramp=60, ndays=T)
 df2 <- run_sim_ramp_R(C, I_0=I_0, R_vec=R_vec, percent_vax =1.0, strategy=S, num_perday=n,
                     v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
                     u = u_var, num_days=T, with_essential=TRUE, H=H) 

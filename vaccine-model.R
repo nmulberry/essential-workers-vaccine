@@ -619,6 +619,140 @@ run_sim_ramp_R = function(C, I_0, R_vec, percent_vax, strategy, num_perday, v_e,
 }
 
 
+run_sim_restart_ramp_R = function(C, df_0, R_vec, percent_vax, strategy, num_perday, v_e, v_p,
+                          u = u_var, num_days=365,H=rep(0,num_groups), 
+                          with_essential=FALSE,set_vax_prop=NULL,p_grp=NULL){
+  # EXACT SAME as run_sim_ramp_R except initialize with a dataframe (from previous output)
+  # df_0 should just be the last time stamp from previous sim
+  
+   # add R as vector 
+  if (!is.list(strategy)){
+    warning("strategy should be a list of target groups.")
+  }
+  # Check dimensions
+  if (!length(v_p)==num_groups){
+    warning("wrong dimensions in v_p")
+  }
+  if (!length(v_e)==num_groups){
+    warning("wrong dimensions in v_e")
+  }
+  if (!length(H)==num_groups){
+    warning("wrong dimensions in H")
+  }
+  if (!nrow(C)==num_groups){
+    warning("wrong dimensions in C")
+  }
+#  if (!length(I_0)==num_groups){
+#    warning("wrong dimensions in I_0")
+#  }
+  if (!length(R_vec)==num_days){
+    warning("wrong dimensions in R_vec")
+  }
+  
+  
+  # Disease Tranmission
+  d_E <- 1/3 # incubation period (E -> I), ref: Davies
+  d_I <- 1/5 # recovery period (I -> R), ref: Davies
+  
+  # adding from run_sim_restart
+  num_stages <- length(strategy)
+  compartments_initial <- as.numeric(df_0[, -(1)])
+  df_0 <- df_0[, -(1)]
+  # find out what stage we are on
+  # needs to account for hesitancy
+  check <- function(i){
+    return(sum(df_0[1:num_groups][strategy[[i]]]) > sum(H[strategy[[i]]]))
+  }
+  not.done.yet= sapply(1:num_stages, check)
+  if (any(not.done.yet)) {
+    stage <- min(which(
+      sapply(1:num_stages, check),
+      arr.ind=T)) 
+  } else {
+    num_perday=0
+    stage=1 }
+  # end add 
+  
+  # Initialize
+#  E_0 <- Ev_0 <- Ex_0 <- Sv_0 <- Sx_0 <- Iv_0 <- Ix_0 <- Rv_0 <- Rx_0 <- D_0 <- rep(0, num_groups)
+#  R_0 <-rep(0,num_groups)
+#  E_0 = (3/5)*(I_0) # was 0 but this makes incidence start at 0 and prevalence start by falling
+#  S_0 <- N_i - I_0 - R_0 - E_0
+  
+  
+  # starting group to vaccinate
+#   stage <- 1
+  groups <- strategy[[stage]]
+  
+  # for restart: calculate new vax_supply (take out those already vaccinated)
+  inds <- grep("v|x", names(df_0))
+  vax_supply <- percent_vax*pop_total -
+    sum(df_0[1,inds])
+  
+# this was set above now that we are in 'restart' mode 
+#   compartments_initial <- c(S_0,Sv_0,Sx_0,E_0,Ev_0,Ex_0,I_0,Iv_0,Ix_0,R_0,Rv_0,Rx_0,D_0)
+ 
+#   vax_supply <- percent_vax*pop_total
+  
+  out <- move_vaccinated_BC(compartments_initial, strategy=strategy, stage=1, num_perday, vax_supply,
+                            v_e, H,set_vax_prop, p_grp)
+  stage <- out$stage
+  compartments_aftervax <- out$states
+  # update C with target R (day 1)
+  parameters = list(u=u, C=C*R_vec[1]/compute_R0(u,C), d_E=d_E, d_I=d_I, v_e=v_e, v_p=v_p)
+  
+  running = TRUE
+  t <- c(0:1)
+  df <- as.data.frame(deSolve::lsoda(compartments_aftervax, t, calculate_derivatives_BC, parameters,
+                                     hmax = 0.01))
+  df[1,] <- c(0, compartments_initial)
+  vax_supply <- vax_supply - num_perday*pop_total
+  vax_supply[vax_supply < 0] <- 0
+  t <- t + 1
+  
+  while(running == TRUE){
+    compartments_initial <- as.numeric(df[t[2], -(1)])
+    # update
+    out <- move_vaccinated_BC(compartments_initial, strategy=strategy, stage=stage, num_perday, vax_supply,
+                              v_e, H,set_vax_prop,p_grp)
+    stage <- out$stage
+    compartments_aftervax <- out$states
+    
+    parameters = list(u=u, C=C*R_vec[max(t)]/compute_R0(u,C), d_E=d_E, d_I=d_I, v_e=v_e, v_p=v_p)
+    temp <- as.data.frame(deSolve::lsoda(compartments_aftervax, t, calculate_derivatives_BC, parameters,
+                                         hmax = 0.01))
+    row.names(temp) <- t+1
+    temp <- temp[-(1),]
+    
+    df <- rbind(df, temp)
+    
+    vax_supply <- vax_supply - num_perday*pop_total
+    
+    vax_supply[vax_supply < 0] <- 0
+    
+    if (vax_supply == 0){
+      remaining_t = c(t[2]:num_days)
+      inits <- as.numeric(df[t[2]+1, -(1)])
+      parameters = list(u=u, C=C, d_E=d_E, d_I=d_I, v_e=v_e, v_p=v_p)
+      temp <- as.data.frame(deSolve::lsoda(inits, remaining_t, calculate_derivatives_BC, parameters,
+                                           hmax = 0.01))
+      row.names(temp) <- remaining_t+1
+      temp <- temp[-(1),]
+      
+      df <- rbind(df, temp)
+      running = FALSE
+    } else if (t[2] == num_days){
+      running = FALSE
+    } else {
+      t <- t + 1
+    }
+  }
+  
+  df <- add_names(df, with_essential)
+  
+  return(df)
+}
+
 get_R_vec <- function(R1, R2, start_ramp, end_ramp, ndays) {
   # creates a vector of length ndays
   # starts at R1 ends at R2
