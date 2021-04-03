@@ -43,29 +43,32 @@ age_names = c("0-9","10-19","20-29","30-39","40-49","50-59","60-69","70-79","80+
 dd1 =data.frame(age_band =age_names , 
                 cases= as.numeric(lastrow[ind1]*(1/(1-ifr))), 
                 hosp = as.numeric(lastrow[ind1]*ihr), 
-                 prot = "unvac") # unvax, by age 
-dd2 = data.frame(age_band =age_names ,
+                 Protection = "Unvaccinated") # unvax, by age 
+dd2 = data.frame(age_band =age_names , # these are the Rvs - vax after exposure
                  cases= as.numeric(lastrow[ind2]*(1/(1-ifr))),
-                 hosp = as.numeric(lastrow[ind2]*ihr*(1-hosp_efficacy)), 
-                 prot="vac") # vax, by age 
+                 #hosp = as.numeric(lastrow[ind2]*ihr*(1-hosp_efficacy)), 
+                 hosp = as.numeric(lastrow[ind2]*ihr),  # note remove eff here
+                Protection="Vaccinated after exposure") # vax, by age 
 dd3 = data.frame(age_band =age_names, 
                  cases= as.numeric(lastrow[ind3]*(1/(1-ifr))),
-                 hosp = as.numeric(lastrow[ind2]*ihr*(1-hosp_efficacy)), 
-                 prot="vac, not protected") # vax unprot, by age 
+                 hosp = as.numeric(lastrow[ind3]*ihr*(1-hosp_efficacy)), 
+                 Protection="Vaccinated but not protected") # vax unprot, by age 
 return(rbind(dd1,dd2,dd3))
 }
 
-total_hosp = function(df, ihr = IHR, hosp_efficacy=v_e_constant) {
+total_hosp = function(df, ihr = IHR, hosp_efficacy=vp) {
   ind = grep("R", names(df))
-  scalevec=c(IHR, (1-hosp_efficacy)*IHR, (1-hosp_efficacy)*IHR) 
+#   scalevec=c(IHR, (1-hosp_efficacy)*IHR, (1-hosp_efficacy)*IHR) 
+    scalevec=c(IHR, IHR, (1-hosp_efficacy)*IHR) # Rv are not protected by efficacy
   htot  <- scalevec*tail(df, n=1)[,ind]
   return(sum(htot))
 }
 
 
-total_long = function(df, lcr = LCR, hosp_efficacy=v_e_constant,ltfac=1) {
+total_long = function(df, lcr = LCR, hosp_efficacy=vp,ltfac=1) {
   ind = grep("R", names(df))
-  scalevec=c(LCR, (1-ltfac*hosp_efficacy)*LCR, (1-ltfac*hosp_efficacy)*LCR) 
+#   scalevec=c(LCR, (1-ltfac*hosp_efficacy)*LCR, (1-ltfac*hosp_efficacy)*LCR) 
+    scalevec=c(LCR, (1-ltfac)*LCR, (1-ltfac*hosp_efficacy)*LCR)  # Rv are not protected by efficacy
   ltot  <- scalevec*tail(df, n=1)[,ind]
   return(sum(ltot))
 }
@@ -358,7 +361,7 @@ vax_immunity = function(df){
 #######################
 compare_sims <- function(sim1, sim2, name1="1", name2="2",
                              startDate = ymd("2021-01-10"), LCFAC=1,
-                             stages=NULL,textsize=16) {
+                             stages=NULL,textsize=16, scale_y=TRUE) {
   if (length(LCFAC)==1) {LCFAC1 = LCFAC; LCFAC2=LCFAC} 
   if (length(LCFAC)==2) {LCFAC1 = LCFAC[1]; LCFAC2=LCFAC[2]} 
 
@@ -366,31 +369,32 @@ compare_sims <- function(sim1, sim2, name1="1", name2="2",
   o3 = extract_cases_deaths(sim2,LCFAC = LCFAC2); o3$scen= name2
   oo = rbind(o1, o3); oo$scen=as.factor(oo$scen)
   oo$date = startDate + oo$time 
-
-  p1=  ggplot(data = oo, aes(x=date, y=incid, fill=age_band))+theme_light()+
+yscaler = ifelse(scale_y == TRUE, 1e5/pop_total, 1)
+ystr = ifelse(scale_y, "per 100K", "")
+  p1=  ggplot(data = oo, aes(x=date, y=incid*yscaler, fill=age_band))+theme_light()+
     facet_wrap(~scen,nrow = 1) +
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize))+
-    ylab("Incidence")
+    ylab(paste("Incidence", ystr))
   
-  p2=  ggplot(data = oo, aes(x=date, y=hosp, fill=age_band))+theme_light()+
+  p2=  ggplot(data = oo, aes(x=date, y=hosp*yscaler, fill=age_band))+theme_light()+
     facet_wrap(~scen,nrow = 1) +
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize))+
-    ylab("Hospitalizations")
+    ylab(paste("Hospitalizations", ystr))
   
-  p3 = ggplot(data = oo, aes(x=date, y=newdeaths, fill=age_band))+
+  p3 = ggplot(data = oo, aes(x=date, y=newdeaths*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
     theme_light()+
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize)) +
-    ylab("Daily deaths")
-  p4 = ggplot(data = oo, aes(x=date, y=long, fill=age_band))+
+    ylab(paste("Daily deaths",ystr))
+  p4 = ggplot(data = oo, aes(x=date, y=long*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
     theme_light()+
     geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
     theme(axis.title.x = element_blank(),text=element_text(size=textsize)) +
-    ylab("Long covid")
+    ylab(paste("Long covid",ystr))
   
   
   if (!is.null(stages)){
