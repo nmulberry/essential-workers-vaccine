@@ -43,29 +43,32 @@ age_names = c("0-9","10-19","20-29","30-39","40-49","50-59","60-69","70-79","80+
 dd1 =data.frame(age_band =age_names , 
                 cases= as.numeric(lastrow[ind1]*(1/(1-ifr))), 
                 hosp = as.numeric(lastrow[ind1]*ihr), 
-                 prot = "unvac") # unvax, by age 
-dd2 = data.frame(age_band =age_names ,
+                 Protection = "Unvaccinated") # unvax, by age 
+dd2 = data.frame(age_band =age_names , # these are the Rvs - vax after exposure
                  cases= as.numeric(lastrow[ind2]*(1/(1-ifr))),
-                 hosp = as.numeric(lastrow[ind1]*ihr*(1-hosp_efficacy)), 
-                 prot="vac") # vax, by age 
+                 #hosp = as.numeric(lastrow[ind2]*ihr*(1-hosp_efficacy)), 
+                 hosp = as.numeric(lastrow[ind2]*ihr),  # note remove eff here
+                Protection="Vaccinated after exposure") # vax, by age 
 dd3 = data.frame(age_band =age_names, 
                  cases= as.numeric(lastrow[ind3]*(1/(1-ifr))),
-                 hosp = as.numeric(lastrow[ind1]*ihr*(1-hosp_efficacy)), 
-                 prot="vac, not protected") # vax unprot, by age 
+                 hosp = as.numeric(lastrow[ind3]*ihr*(1-hosp_efficacy)), 
+                 Protection="Vaccinated but not protected") # vax unprot, by age 
 return(rbind(dd1,dd2,dd3))
 }
 
-total_hosp = function(df, ihr = IHR, hosp_efficacy=v_e_constant) {
+total_hosp = function(df, ihr = IHR, hosp_efficacy=vp) {
   ind = grep("R", names(df))
-  scalevec=c(IHR, (1-hosp_efficacy)*IHR, (1-hosp_efficacy)*IHR) 
+#   scalevec=c(IHR, (1-hosp_efficacy)*IHR, (1-hosp_efficacy)*IHR) 
+    scalevec=c(IHR, IHR, (1-hosp_efficacy)*IHR) # Rv are not protected by efficacy
   htot  <- scalevec*tail(df, n=1)[,ind]
   return(sum(htot))
 }
 
 
-total_long = function(df, lcr = LCR, hosp_efficacy=v_e_constant,ltfac=1) {
+total_long = function(df, lcr = LCR, hosp_efficacy=vp,ltfac=1) {
   ind = grep("R", names(df))
-  scalevec=c(LCR, (1-ltfac*hosp_efficacy)*LCR, (1-ltfac*hosp_efficacy)*LCR) 
+#   scalevec=c(LCR, (1-ltfac*hosp_efficacy)*LCR, (1-ltfac*hosp_efficacy)*LCR) 
+    scalevec=c(LCR, (1-ltfac)*LCR, (1-ltfac*hosp_efficacy)*LCR)  # Rv are not protected by efficacy
   ltot  <- scalevec*tail(df, n=1)[,ind]
   return(sum(ltot))
 }
