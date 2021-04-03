@@ -44,8 +44,10 @@ strategies <- list( list(9, c(8,15), c(7, 10, 11, 12, 13, 14), 6,5,4,3))
 
 
 # ---- figure 2: compare 2 to 2.5 reopening in september 
-test1nk = run_over_scen_3(1.1, 2.5, ve = 0.8, vp=0.75, trytime = 180,T2=720,speedup = 2)
-test2nk = run_over_scen_3(1.1, 2, ve = 0.8, vp=0.75, trytime = 180,T2=720,speedup = 2)
+test1nk = run_over_scen_3(1.1, 2.5, ve = 0.8, vp=0.75, 
+                          trytime = 180,T2=720,speedup = 1)
+test2nk = run_over_scen_3(1.1, 2, ve = 0.8, vp=0.75,
+                          trytime = 180,T2=720,speedup = 1)
 tmp = compare_sims(filter(test1nk, time <=600), filter(test2nk, time<=600),
                    textsize = 10, 
                    name1 = "Reopen to R = 2.5", 
@@ -54,7 +56,7 @@ ggarrange(plotlist = tmp[1:3], nrow=1)
 ggsave("reopen-sept-rcompare.pdf", height = 4, width = 12)
 
 # ---- figure 3: bar plots illustrating WHO gets infected ---- 
-dd=total_cases_origin(filter(test2, time >= 180 , time <=600))
+dd=total_cases_origin(filter(test1nk, time >= 180 , time <=600))
 yscaler = 1e5/pop_total
 p1 = ggplot(dd, aes(x=age_band, y=cases*yscaler, fill=Protection)) + 
     geom_bar(stat="identity",alpha=0.6) +
@@ -66,20 +68,23 @@ p2 = ggplot(dd, aes(x=age_band, y=hosp*yscaler, fill=Protection)) +
     theme(axis.title.x = element_blank())
 ggarrange(p1, p2, nrow=1, common.legend = TRUE, legend = "bottom")
 ggsave("end-who-protect1.pdf", width=10, height = 5) 
+sum(dd$hosp)*yscaler
 
 
 # ---- figure 4: again but with vaccinating kids ----
 strategies <- list( list(9, c(8,15), c(7, 10, 11, 12, 13, 14), 6,5,4,3, 2))
 H[1:2]=c(0,0.7)*N_i[1:2]
-test1k = run_over_scen_3(1.1, 2.5, ve = 0.8, vp=0.75, trytime = 180,T2=720,speedup = 2)
-test2k = run_over_scen_3(1.1, 2, ve = 0.8, vp=0.75, trytime = 180,T2=720,speedup = 2)
-tmp = compare_sims(filter(test1nk, time <=600), filter(test1k, time<=600),
+test1k = run_over_scen_3(1.1, 2.5, ve = 0.8, vp=0.75,
+                         trytime = 180,T2=720,speedup =1)
+test2k = run_over_scen_3(1.1, 2, ve = 0.8, vp=0.75, 
+                         trytime = 180,T2=720,speedup = 1)
+tmp = compare_sims(filter(test1nk, time <=700), filter(test1k, time<=700),
                    textsize = 10, 
                    name1 = "Reopen to R = 2.5", 
                    name2 = "Reopen to R = 2.5, with 10-19")
 toprow = ggarrange(plotlist = tmp[1:3], nrow=1)
 
-dd=total_cases_origin(filter(test1k, time >= 180 , time <=600))
+dd=total_cases_origin(filter(test1k, time >= 180 , time <=700))
 yscaler = 1e5/pop_total
 p1 = ggplot(dd, aes(x=age_band, y=cases*yscaler, fill=Protection)) + 
     geom_bar(stat="identity",alpha=0.6) +
@@ -91,6 +96,7 @@ p2 = ggplot(dd, aes(x=age_band, y=hosp*yscaler, fill=Protection)) +
     theme(axis.title.x = element_blank())
 botrow = ggarrange(p1, p2, nrow=1, common.legend = TRUE, legend = "bottom")
 ggarrange(toprow,botrow,nrow = 2)
+sum(dd$hosp)*yscaler
 ggsave("reopen-kids-prot.pdf", width = 12,height = 8)
 #
 
