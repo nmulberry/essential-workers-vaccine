@@ -232,7 +232,7 @@ colnames(L) <- colnames(Lv) <- colnames(Lx) <- paste("L", 1:num_groups, sep="")
     Hx[,n] = get_hosp(recx[,n], thishr = (1-hosp_efficacy[n])*ihr[n], thisdh = dur_hosp[n])
 
     L[,n] = get_hosp(rec[,n], thishr = lcr[n], thisdh = dur_ltc[n])
-    Lv[,n] = get_hosp(recv[,n], thishr = (1-lcrfac*hosp_efficacy[n])*lcr[n], thisdh = dur_ltc[n])
+ #    Lv[,n] = get_hosp(recv[,n], thishr = (1-lcrfac*hosp_efficacy[n])*lcr[n], thisdh = dur_ltc[n])
     Lv[,n] = get_hosp(recv[,n], thishr = lcr[n], thisdh = dur_ltc[n])
     Lx[,n] = get_hosp(recx[,n], thishr = (1-lcrfac*hosp_efficacy[n])*lcr[n], thisdh = dur_ltc[n])
   }
