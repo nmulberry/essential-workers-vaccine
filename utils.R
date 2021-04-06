@@ -375,28 +375,36 @@ yscaler = ifelse(scale_y == TRUE, 1e5/pop_total, 1)
 ystr = ifelse(scale_y, "per 100K", "")
   p1=  ggplot(data = oo, aes(x=date, y=incid*yscaler, fill=age_band))+theme_light()+
     facet_wrap(~scen,nrow = 1) +
-    geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
-    theme(axis.title.x = element_blank(),text=element_text(size=textsize))+
-    ylab(paste("Incidence", ystr))
+    geom_area(position="stack",alpha=0.7)+ #guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1))+
+    ylab(paste("Incidence", ystr))+scale_x_date( date_labels = "%m-%y")
   
   p2=  ggplot(data = oo, aes(x=date, y=hosp*yscaler, fill=age_band))+theme_light()+
     facet_wrap(~scen,nrow = 1) +
-    geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
-    theme(axis.title.x = element_blank(),text=element_text(size=textsize))+
-    ylab(paste("Hospitalizations", ystr))
+    geom_area(position="stack",alpha=0.7)+# guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1))+
+    ylab(paste("Hospitalizations", ystr))+scale_x_date( date_labels = "%m-%y")
   
   p3 = ggplot(data = oo, aes(x=date, y=newdeaths*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
     theme_light()+
-    geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
-    theme(axis.title.x = element_blank(),text=element_text(size=textsize)) +
-    ylab(paste("Daily deaths",ystr))
+    geom_area(position="stack",alpha=0.7)+ #guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1))+
+    ylab(paste("Daily deaths",ystr))+scale_x_date( date_labels = "%m-%y")
   p4 = ggplot(data = oo, aes(x=date, y=long*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
     theme_light()+
-    geom_area(position="stack",alpha=0.7)+guides(fill=FALSE)+
-    theme(axis.title.x = element_blank(),text=element_text(size=textsize)) +
-    ylab(paste("Long covid",ystr))
+    geom_area(position="stack",alpha=0.7)+#guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1))+
+    ylab(paste("Long covid",ystr))+scale_x_date( date_labels = "%m-%y")
   
   
   if (!is.null(stages)){
