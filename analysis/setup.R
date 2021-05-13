@@ -152,3 +152,183 @@ run_over_scen = function(R, ve, vp, scen, n, alpha=0.0){
    df$alpha <- alpha
    return(df)}
 
+
+
+
+
+# define 3-stage function, and below, a ramp function 
+# here T1 is 60 days, we vax 80+ 
+# T2 defines the end time of the vaccination rollout
+# trytime is some time 
+run_over_scen_3 = function(R1, R2, trytime,T2=210,
+                           ve=0.75, vp=0.9,  scen=1,speedup=1, alpha=0.0){
+   T1 <- 60
+   #    T2 <- 360
+   # Initial stage (vax all 80+)
+   R_init <- 1.05
+   n <- age_demo[9]/T1
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R_init, in_school=TRUE, alpha_factor=alpha)
+   
+   df0 <- run_sim_basic(C, I_0=I_0, percent_vax =1.0, strategy=list(9), num_perday=n,
+                        v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                        u = u_var, num_days=T1, with_essential=TRUE, H=H) 
+   
+   # next stage : R moves to R1 and rate increases, goes for trytime days
+   n <- speedup*sum(age_demo[-9])/210
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R1, in_school=TRUE, alpha_factor=alpha)
+   df1 <- run_sim_restart(C, df_0=tail(df0, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
+                          v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                          u = u_var, num_days=trytime, with_essential=TRUE, H=H)
+   
+   # final stage: we now reopen.  R moves to R2, vax rate stays the same 
+   # we may want to change v_e here because the efficacy increases as we do second doses 
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R2, in_school=TRUE, alpha_factor=alpha)
+   df <- run_sim_restart(C, df_0=tail(df1, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
+                         v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                         u = u_var, num_days=T2-trytime, with_essential=TRUE, H=H)
+   # combine 
+   df1$time = df1$time+T1+1
+   df$time = df$time+T1+trytime+1
+   
+   df <- combine_age_groups(rbind(df0,df1,df))
+   
+   # add pars
+   df$r1 <- R1
+   df$r2 <- R2
+   df$trytime = trytime
+   df$ve <- ve
+   df$vp <- vp
+   df$type <- labels[[scen]]
+   df$scen <- scen
+   df$alpha <- alpha
+   return(df)
+}
+
+
+# define 5-stage function, and below, a ramp function 
+# here Ta is 60 days, we vax 80+ 
+# then we have R1, March-April, 1.3-1.5. Tb is 60 days. Vax rate is ?? 
+# then we have R2 < 1 until we reopen, hitting about 600ish cases / day by may 12 ish
+# then we have R3, the reopening R
+# we reopen at 120+ trytime , > may 12, (132 days in, so trytime > 12 ) 
+# T2 defines the end time of the vaccination rollout
+# trytime is a time : days since May 1 when we reopen. 
+run_over_scen_4 = function(R1, R2, R3, trytime,Tfinal=210,
+                           ve=0.75, vp=0.9,  scen=1,speedup=1, alpha=0.0){
+   T1 <- 60
+   # Initial stage (vax all 80+) Jan-end Feb 
+   R_init <- 1.05
+   n <- age_demo[9]/T1
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R_init, in_school=TRUE, alpha_factor=alpha)
+   
+   df0 <- run_sim_basic(C, I_0=I_0, percent_vax =1.0, strategy=list(9), num_perday=n,
+                        v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                        u = u_var, num_days=T1, with_essential=TRUE, H=H) 
+   
+   # next stage: March/April:  R moves to R1 and rate increases. this goes for 60 days
+   n <-  0.004 # speedup*sum(age_demo[-9])/210
+   T2=40
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R1, in_school=TRUE, alpha_factor=alpha)
+   df1 <- run_sim_restart(C, df_0=tail(df0, n=1), percent_vax =1.0, 
+                          strategy= strategies[[scen]], num_perday=n,
+                          v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                          u = u_var, num_days=T2, with_essential=TRUE, H=H)
+   
+   # third stage:  R moves to R2 < 1 , vax rate stays the same 
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R2, in_school=TRUE, alpha_factor=alpha)
+   df2 <- run_sim_restart(C, df_0=tail(df1, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
+                         v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                         u = u_var, num_days=trytime, with_essential=TRUE, H=H)
+
+   # fourth stage: reopening  R moves to R3 < 1 , vax rate increases 
+   n=0.008
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R3, in_school=TRUE, alpha_factor=alpha)
+   df <- run_sim_restart(C, df_0=tail(df2, n=1), percent_vax =1.0, 
+                         strategy= strategies[[scen]], num_perday=n,
+                         v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                         u = u_var, num_days=Tfinal-(T1+T2+trytime), 
+                         with_essential=TRUE, H=H)
+   
+   
+      # combine 
+   df1$time = df1$time+T1+1
+   df2$time = df2$time +T1+T2+1
+   df$time = df$time+T1+T2+trytime+1
+   
+   df <- combine_age_groups(rbind(df0,df1,df2[-(1:3),],df[-(1:3),]))
+   
+   # add pars
+   df$r1 <- R1
+   df$r2 <- R2
+   df$r3 <- R3
+   df$trytime = trytime
+   df$ve <- ve
+   df$vp <- vp
+   df$type <- labels[[scen]]
+   df$scen <- scen
+   df$alpha <- alpha
+   return(df)
+}
+
+
+
+
+
+run_over_scen_ramp = function(R1, R2,ramptime=60, trytime,T2=210,
+                              ve=0.75, vp=0.9,  scen=1,speedup=1, alpha=0.0){
+   T1 <- 60
+   #    T2 <- 360
+   # Initial stage (vax all 80+)
+   R_init <- 1.05
+   n <- age_demo[9]/T1
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R_init, in_school=TRUE, alpha_factor=alpha)
+   
+   df0 <- run_sim_basic(C, I_0=I_0, percent_vax =1.0, strategy=list(9), num_perday=n,
+                        v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                        u = u_var, num_days=T1, with_essential=TRUE, H=H) 
+   
+   # next stage : R moves to R1 and rate increases
+   n <- speedup*sum(age_demo[-9])/210
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=R1, in_school=TRUE, alpha_factor=alpha)
+   df1 <- run_sim_restart(C, df_0=tail(df0, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
+                          v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                          u = u_var, num_days=trytime, with_essential=TRUE, H=H)
+   
+   # final stage L R moves to R2, rate stays the same 
+   C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+                              target_R0=1.0, in_school=TRUE)
+   
+   #     C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
+   #                              target_R0=R2, in_school=TRUE, alpha_factor=alpha)
+   R_vec <- get_R_vec(R1=R1, R2=R1, start_ramp=10, end_ramp=10+ramptime, ndays=T2-trytime)
+   
+   df <- run_sim_restart_ramp_R(C=C, df_0=tail(df1, n=1),  R_vec=R_vec, percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
+                                v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
+                                u = u_var, num_days=T2-trytime, with_essential=TRUE, H=H)
+   # combine 
+   df1$time = df1$time+T1+1
+   df$time = df$time+T1+trytime+1
+   
+   df <- combine_age_groups(rbind(df0,df1,df))
+   
+   # add pars
+   df$r1 <- R1
+   df$r2 <- R2
+   df$trytime = trytime
+   df$ve <- ve
+   df$vp <- vp
+   df$type <- labels[[scen]]
+   df$scen <- scen
+   df$alpha <- alpha
+   return(df)
+}
+

@@ -241,6 +241,20 @@ return(cbind(output, H, L))
 }
 
 
+extract_inc_byvax <- function(output, d_E=1/3,includeExposed=TRUE) {
+  Es    = output[,grep("E", colnames(output))] # this is 27 columns of Es
+  L=ncol(Es)/3 # number of cols in each of E, Ev and Ex
+  # add them up. The incidence into I is those coming into I from E
+  incid1 =data.frame(time=output$time, incid=rowSums(d_E*(Es[,1:L])), status="Unvaccinated")
+  incid2 =data.frame(time=output$time, incid =rowSums(d_E*Es[,(L+1):(2*L)]) , status="Exposed pre-vac")
+  incid3=data.frame(time=output$time, incid=rowSums(d_E*Es[,(2*L+1):(3*L)]), status="Vaccinated")
+alld = rbind(incid1, incid2, incid3)
+   if (includeExposed==TRUE) {
+   return(alld)
+ } else {   return(filter(alld, status != "Exposed pre-vac"))
+}
+}
+
 extract_incidence <- function(output,d_E= 1/3) {
   Es    = output[,grep("E", colnames(output))] # this is 27 columns of Es
   L=ncol(Es)/3 # number of cols in each of E, Ev and Ex
@@ -316,7 +330,6 @@ extract_cases_deaths <- function(output, LCFAC=1) {
 }
 
 # like extract_cases_deaths, but keeping track of whether they're vax'd or not
-
 
 
 get_hosp <- function(r_col, thishr, thisdi= 1/5,thisdh = 10) {
@@ -422,6 +435,23 @@ ystr = ifelse(scale_y, "per 100K", "")
   
   return(list(p1,p2,p3,p4))
 }
+
+plot_incid_data <- function(test1, bcdata = dat,headertext="BC",textsize=10) {
+o1=extract_inc_byvax(test1,includeExposed = F)
+o1$date = startDate + o1$time 
+o1$scen = headertext # 
+ggplot(data = filter(o1, date>startDate+15), aes(x=date, y=incid*ascFrac, fill=status))+theme_light()+
+  facet_wrap(~scen,nrow = 1) +
+  geom_area(position="stack",alpha=0.7)+ #guides(fill=FALSE)+
+  theme(axis.title.x = element_blank(), 
+        text=element_text(size=textsize),
+        strip.text.x = element_text(size = textsize+1))+
+  ylab("Incidence") +scale_x_date( date_labels = "%m-%y") + 
+  scale_fill_viridis(discrete = TRUE, option = "D",begin = 0.5)+
+  geom_point(data = filter(bcdata,date > startDate+15),inherit.aes = F, aes(x=date, y=cases),
+             color="black",alpha=0.8)+theme(legend.position = "bottom")
+}
+
 
 
 display_prop_vax <- function(sim,startDate=lubridate::ymd("2021-01-01"),

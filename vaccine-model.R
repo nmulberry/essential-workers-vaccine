@@ -358,7 +358,7 @@ if (any(not.done.yet)) {
   running = TRUE
   t <- c(0:1)
   df <- as.data.frame(deSolve::lsoda(compartments_aftervax, t, calculate_derivatives_BC, parameters,
-                                     hmax = 0.01))
+                                     hmax = 0.01,atol=1e-7, rtol=1e-7))
   df[1,] <- c(0, compartments_initial)
   vax_supply <- vax_supply - num_perday*pop_total
   vax_supply[vax_supply < 0] <- 0
@@ -376,7 +376,7 @@ if (any(not.done.yet)) {
     parameters = list(u=u, C=C, d_E=d_E, d_I=d_I, v_e=v_e, v_p=v_p)
 
     temp <- as.data.frame(deSolve::lsoda(compartments_aftervax, t, calculate_derivatives_BC, parameters,
-                                         hmax = 0.01))
+                                         hmax = 0.01,atol=1e-7, rtol=1e-7))
 
     row.names(temp) <- t+1
     temp <- temp[-(1),]
@@ -391,7 +391,7 @@ if (any(not.done.yet)) {
       inits <- as.numeric(df[t[2]+1, -(1)])
       parameters = list(u=u, C=C, d_E=d_E, d_I=d_I, v_e=v_e, v_p=v_p)
       temp <- as.data.frame(deSolve::lsoda(inits, remaining_t, calculate_derivatives_BC, parameters,
-                                           hmax = 0.01)) #and people still end up in the vaccinated categories
+                                           hmax = 0.01,atol=1e-7, rtol=1e-7)) #and people still end up in the vaccinated categories
       row.names(temp) <- remaining_t+1
       temp <- temp[-(1),]
 
