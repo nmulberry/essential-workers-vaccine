@@ -470,8 +470,8 @@ calculate_derivatives_BC=function(t, x, parameters){
   dIx <- as.matrix(Ex*d_E) - as.matrix(Ix*d_I)
 
   dR  <- as.matrix(I*d_I*(1-IFR))
-  dRv <- as.matrix(Iv*d_I*(1-IFR)*v_p)
-  dRx <- as.matrix(Ix*d_I*(1-IFR)*v_p)
+  dRv <- as.matrix(Iv*d_I*(1-(IFR*(1-v_p))))
+  dRx <- as.matrix(Ix*d_I*(1-(IFR*(1-v_p))))
 
   dD  <- as.matrix(I*d_I*IFR + Iv*d_I*IFR*(1-v_p) + Ix*d_I*IFR*(1-v_p))
 
