@@ -58,58 +58,58 @@ ve=0.8
 vp=0.75
 
 
-########## BC REPORT 1 : 0.8 eff against infection , 3 reopenings May 25 
+########## BC REPORT 1 : 0.6 eff against infection , 3 reopenings May 25 ( 2 plotted) 
 dat = readRDS("~/BC-dat.rds") 
-test1 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=1.7,ve=0.8, vp=0.75,trytime = 25, Tfinal=365,scen = 2 )
-test2 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2,ve=0.8, vp=0.75,trytime = 25, Tfinal=365,scen = 2 )
-test3 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2.3,ve=0.8, vp=0.75,trytime = 25, Tfinal=365,scen = 2 )
+test1 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=1.7,ve=0.6, vp=0.25,trytime = 25, Tfinal=365,scen = 2 )
+test2 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2,ve=0.6, vp=0.25,trytime = 25, Tfinal=365,scen = 2 )
+test3 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2.3,ve=0.6, vp=0.25,trytime = 25, Tfinal=365,scen = 2 )
 # o1 = extract_cases_deaths(test1,LCFAC = 1);
 p1 = plot_incid_data(test1,headertext="Acceptance 0.75-0.85, Reopen R=1.7",textsize = 9)
 p2 = plot_incid_data(test2,headertext="Acceptance 0.75-0.85, Reopen R=2",textsize = 9)
 p3 = plot_incid_data(test3,headertext="Acceptance 0.75-0.85, Reopen R=2.3",textsize = 9)
- ggarrange(p1,p2,p3, common.legend = TRUE, nrow=1,legend = "bottom")
- ggsave("~/incid-reopen-0.8.pdf", width = 10, height = 5)
+ ggarrange(p1,p2, common.legend = TRUE, nrow=1,legend = "bottom")
+ ggsave("~/incid-reopen-0.6.pdf", width = 10, height = 5)
 
  display_prop_vax(test1, label = "BC")
 
  
 ######### BC REPORT 2 : 0.7 eff against infection , 3 reopenings May 25 
 # same thing with lower efficacy against infection 0.7, given we all have a single dose 
-
-test1 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=1.7,ve=0.7, vp=0.75, trytime = 25, Tfinal=365,scen = 2 )
-test2 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2,ve=0.7, vp=0.75,trytime = 25, Tfinal=365,scen = 2 )
-test3 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2.3,ve=0.7, vp=0.75,trytime = 25, Tfinal=365,scen = 2 )
+vp=0.5 # NOTE now in as default scaling in extracting the incidence
+test1 = run_over_scen_4(R1 = 1.23, R2=0.95, R3=1.7,ve=0.7, vp=0.5, trytime = 45, Tfinal=365,scen = 2 )
+test2 = run_over_scen_4(R1 = 1.23, R2=0.95, R3=2,ve=0.7, vp=0.5,trytime = 45, Tfinal=365,scen = 2 )
+test3 = run_over_scen_4(R1 = 1.23, R2=0.95, R3=2.3,ve=0.7, vp=0.5,trytime = 45, Tfinal=365,scen = 2 )
 # o1 = extract_cases_deaths(test1,LCFAC = 1);
 p1 = plot_incid_data(test1,headertext="Acceptance 0.75-0.85, Reopen R=1.7",textsize = 9)
 p2 = plot_incid_data(test2,headertext="Acceptance 0.75-0.85, Reopen R=2",textsize = 9)
 p3 = plot_incid_data(test3,headertext="Acceptance 0.75-0.85, Reopen R=2.3",textsize = 9)
 ggarrange(p1,p2,p3, common.legend = TRUE, nrow=1,legend = "bottom")
-ggsave("~/incid-reopen-0.7.pdf", width = 10, height = 5)
+ggsave("~/incid-reopen-0.7.pdf", width = 10, height = 5) # USED THIS ONE 
 
 
 
-########## BC REPORT 3 : 0.8 eff against infection , 3 reopenings June 15 
+########## BC REPORT 3 : 0.7 eff against infection , 3 reopenings June 15 
 
-test1 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=1.7,ve=0.8, vp=0.75,trytime = 45, Tfinal=365,scen = 2 )
-test2 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2,ve=0.8, vp=0.75,trytime = 45, Tfinal=365,scen = 2 )
-test3 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2.3,ve=0.8, vp=0.75,trytime = 45, Tfinal=365,scen = 2 )
+test1 = run_over_scen_4(R1 = 1.23, R2=0.95, R3=1.7,ve=0.7, vp=0.5,trytime = 65, Tfinal=365,scen = 2 )
+test2 = run_over_scen_4(R1 = 1.23, R2=0.95, R3=2,ve=0.7, vp=0.5,trytime = 65, Tfinal=365,scen = 2 )
+test3 = run_over_scen_4(R1 = 1.23, R2=0.95, R3=2.3,ve=0.7, vp=0.5,trytime = 65, Tfinal=365,scen = 2 )
 # o1 = extract_cases_deaths(test1,LCFAC = 1);
 p1 = plot_incid_data(test1,headertext="Acceptance 0.75-0.85, Reopen R=1.7",textsize = 9)
 p2 = plot_incid_data(test2,headertext="Acceptance 0.75-0.85, Reopen R=2",textsize = 9)
 p3 = plot_incid_data(test3,headertext="Acceptance 0.75-0.85, Reopen R=2.3",textsize = 9)
 ggarrange(p1,p2,p3, common.legend = TRUE, nrow=1,legend = "bottom")
-ggsave("~/incid-reopen-june-0.8.pdf", width = 10, height = 5)
+ggsave("~/incid-reopen-june-0.7.pdf", width = 10, height = 5)
 
 display_prop_vax(test1, label = "BC")
 
 
-######### BC REPORT 4 : 0.7 eff against infection , 3 reopenings June 15 
+######### BC REPORT 4 : 0.7 eff against infection , 3 reopenings July 25 
 
 # same thing with lower efficacy against infection 0.7, given we all have a single dose 
 
-test1 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=1.7,ve=0.7, vp=0.75, trytime = 45, Tfinal=365,scen = 2 )
-test2 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2,ve=0.7, vp=0.75,trytime = 45, Tfinal=365,scen = 2 )
-test3 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2.3,ve=0.7, vp=0.75,trytime = 45, Tfinal=365,scen = 2 )
+test1 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=1.7,ve=0.7, vp=0.55, trytime = 85, Tfinal=365,scen = 2 )
+test2 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2,ve=0.7, vp=0.55,trytime = 85, Tfinal=365,scen = 2 )
+test3 = run_over_scen_4(R1 = 1.23, R2=0.9, R3=2.3,ve=0.7, vp=0.55,trytime = 85, Tfinal=365,scen = 2 )
 # o1 = extract_cases_deaths(test1,LCFAC = 1);
 p1 = plot_incid_data(test1,headertext="Acceptance 0.75-0.85, Reopen R=1.7",textsize = 9)
 p2 = plot_incid_data(test2,headertext="Acceptance 0.75-0.85, Reopen R=2",textsize = 9)

@@ -239,15 +239,17 @@ run_over_scen_4 = function(R1, R2, R3, trytime,Tfinal=210,
                           v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
                           u = u_var, num_days=T2, with_essential=TRUE, H=H)
    
-   # third stage:  R moves to R2 < 1 , vax rate stays the same 
+   # third stage:  R moves to R2 < 1, vax rate is up. This is May onward
+   n <- 0.007
    C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
                               target_R0=R2, in_school=TRUE, alpha_factor=alpha)
    df2 <- run_sim_restart(C, df_0=tail(df1, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,
                          v_e = rep(ve, num_groups), v_p=rep(vp, num_groups),
                          u = u_var, num_days=trytime, with_essential=TRUE, H=H)
 
-   # fourth stage: reopening  R moves to R3 < 1 , vax rate increases 
-   n=0.008
+   # fourth stage: reopening  R moves to R3 < 1 ,
+   # vax rate should not increase depending on when we try to reopn
+   # so it has to stay the same march/april onward which is NOT RIGHT 
    C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
                               target_R0=R3, in_school=TRUE, alpha_factor=alpha)
    df <- run_sim_restart(C, df_0=tail(df2, n=1), percent_vax =1.0, 
