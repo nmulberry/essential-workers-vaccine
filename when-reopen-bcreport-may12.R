@@ -119,10 +119,7 @@ ggsave("~/incid-reopen-june-0.7.pdf", width = 10, height = 5)
 
 
 
-
-
-
-
+# ---- stuff RG asked for ---- >> begin here but see reopening-script-rg.R 
 
 
 

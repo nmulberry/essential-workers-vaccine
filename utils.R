@@ -24,7 +24,7 @@ total_cases = function(df) {
 }
 
 
-total_cases_origin = function(df, ifr=IFR, ihr = IHR, hosp_efficacy=vp) {
+total_cases_origin = function(df, ifr=IFR, ihr = IHR, hosp_efficacy=vp,activeTimeOnly=TRUE) {
 # note -- the D group doesn't track whether the individual was vaccinated or not
 # this makes counting the cases and splitting by whether they were vaccinated 
   # challenging
@@ -38,20 +38,27 @@ total_cases_origin = function(df, ifr=IFR, ihr = IHR, hosp_efficacy=vp) {
   ind1=setdiff(ind, c(ind2, ind3)) # just R 
   ifr = ifr[1:length(ind1)] # 9 age groups, df is collected to not have ew, IFR has all 15
   ihr = ihr[1:length(ind1)]
+  if (activeTimeOnly == TRUE) {
   lastrow =tail(df,n=1)
+  firstrow=head(df,n=1) # NOTE subtracting off the Rs who were already there
+  } else {
+    lastrow = tail(df,n=1)
+    firstrow=rep(0, length(lastrow))
+  }
+  
 age_names = c("0-9","10-19","20-29","30-39","40-49","50-59","60-69","70-79","80+")
 dd1 =data.frame(age_band =age_names , 
-                cases= as.numeric(lastrow[ind1]*(1/(1-ifr))), 
-                hosp = as.numeric(lastrow[ind1]*ihr), 
+                cases= as.numeric( (lastrow[ind1]-firstrow[ind1])*(1/(1-ifr))), 
+                hosp = as.numeric( (lastrow[ind1]-firstrow[ind1])*ihr), 
                  Protection = "Unvaccinated") # unvax, by age 
 dd2 = data.frame(age_band =age_names , # these are the Rvs - vax after exposure
-                 cases= as.numeric(lastrow[ind2]*(1/(1-ifr))),
+                 cases= as.numeric( (lastrow[ind2]-firstrow[ind2])*(1/(1-ifr))),
                  #hosp = as.numeric(lastrow[ind2]*ihr*(1-hosp_efficacy)), 
-                 hosp = as.numeric(lastrow[ind2]*ihr),  # note remove eff here
+                 hosp = as.numeric( (lastrow[ind2]-firstrow[ind2])*ihr),  # note remove eff here
                 Protection="Vaccinated after exposure") # vax, by age 
 dd3 = data.frame(age_band =age_names, 
-                 cases= as.numeric(lastrow[ind3]*(1/(1-ifr))),
-                 hosp = as.numeric(lastrow[ind3]*ihr*(1-hosp_efficacy)), 
+                 cases= as.numeric( (lastrow[ind3]-firstrow[ind3])*(1/(1-ifr))),
+                 hosp = as.numeric( (lastrow[ind3]-firstrow[ind3])*ihr*(1-hosp_efficacy)), 
                  Protection="Vaccinated but not protected") # vax unprot, by age 
 return(rbind(dd1,dd2,dd3))
 }
@@ -392,16 +399,19 @@ ystr = ifelse(scale_y, "per 100K", "")
     geom_area(position="stack",alpha=0.7)+ #guides(fill=FALSE)+
     theme(axis.title.x = element_blank(), 
           text=element_text(size=textsize),
-          strip.text.x = element_text(size = textsize+1))+
-    ylab(paste("Incidence", ystr))+scale_x_date( date_labels = "%m-%y")
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Incidence", ystr))+scale_x_date( date_breaks = "months",date_labels = "%b-%d")
+  # scale_x_date( date_labels = "%m-%y")
   
   p2=  ggplot(data = oo, aes(x=date, y=hosp*yscaler, fill=age_band))+theme_light()+
     facet_wrap(~scen,nrow = 1) +
     geom_area(position="stack",alpha=0.7)+# guides(fill=FALSE)+
     theme(axis.title.x = element_blank(), 
           text=element_text(size=textsize),
-          strip.text.x = element_text(size = textsize+1))+
-    ylab(paste("Hospitalizations", ystr))+scale_x_date( date_labels = "%m-%y")
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Hospitalizations", ystr))+scale_x_date( date_breaks = "months",date_labels = "%b-%d") #+scale_x_date( date_labels = "%m-%y")
   
   p3 = ggplot(data = oo, aes(x=date, y=newdeaths*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
@@ -409,16 +419,18 @@ ystr = ifelse(scale_y, "per 100K", "")
     geom_area(position="stack",alpha=0.7)+ #guides(fill=FALSE)+
     theme(axis.title.x = element_blank(), 
           text=element_text(size=textsize),
-          strip.text.x = element_text(size = textsize+1))+
-    ylab(paste("Daily deaths",ystr))+scale_x_date( date_labels = "%m-%y")
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Daily deaths",ystr)) +scale_x_date( date_breaks = "months",date_labels = "%b-%d")# +scale_x_date( date_labels = "%m-%y")
   p4 = ggplot(data = oo, aes(x=date, y=long*yscaler, fill=age_band))+
     facet_wrap(~scen,nrow = 1) +
     theme_light()+
     geom_area(position="stack",alpha=0.7)+#guides(fill=FALSE)+
     theme(axis.title.x = element_blank(), 
           text=element_text(size=textsize),
-          strip.text.x = element_text(size = textsize+1))+
-    ylab(paste("Long covid",ystr))+scale_x_date( date_labels = "%m-%y")
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Long covid",ystr))+scale_x_date( date_breaks = "months",date_labels = "%b-%d")# +scale_x_date( date_labels = "%m-%y")
   
   
   if (!is.null(stages)){
@@ -436,6 +448,76 @@ ystr = ifelse(scale_y, "per 100K", "")
   
   return(list(p1,p2,p3,p4))
 }
+
+compare_sims_nofill <- function(sim1, sim2, name1="1", name2="2",
+                         startDate = ymd("2021-01-10"), LCFAC=1,
+                         stages=NULL,textsize=16, scale_y=TRUE) {
+  if (length(LCFAC)==1) {LCFAC1 = LCFAC; LCFAC2=LCFAC} 
+  if (length(LCFAC)==2) {LCFAC1 = LCFAC[1]; LCFAC2=LCFAC[2]} 
+  
+  o1 = extract_cases_deaths(sim1,LCFAC = LCFAC1); o1$scen = name1
+  o3 = extract_cases_deaths(sim2,LCFAC = LCFAC2); o3$scen= name2
+  oo = rbind(o1, o3); oo$scen=as.factor(oo$scen)
+  oo$date = startDate + oo$time 
+  yscaler = ifelse(scale_y == TRUE, 1e5/pop_total, 1)
+  ystr = ifelse(scale_y, "per 100K", "")
+  p1=  ggplot(data = oo, aes(x=date, y=incid*yscaler), fill="blue")+theme_light()+
+    facet_wrap(~scen,nrow = 1) +
+    geom_area(position="stack",alpha=0.7)+ #guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Incidence", ystr))+scale_x_date( date_breaks = "months",date_labels = "%b-%d")
+  # scale_x_date( date_labels = "%m-%y")
+  
+  p2=  ggplot(data = oo, aes(x=date, y=hosp*yscaler, fill=age_band))+theme_light()+
+    facet_wrap(~scen,nrow = 1) +
+    geom_area(position="stack",alpha=0.7)+# guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Hospitalizations", ystr))+scale_x_date( date_breaks = "months",date_labels = "%b-%d") #+scale_x_date( date_labels = "%m-%y")
+  
+  p3 = ggplot(data = oo, aes(x=date, y=newdeaths*yscaler, fill=age_band))+
+    facet_wrap(~scen,nrow = 1) +
+    theme_light()+
+    geom_area(position="stack",alpha=0.7)+ #guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Daily deaths",ystr)) +scale_x_date( date_breaks = "months",date_labels = "%b-%d")# +scale_x_date( date_labels = "%m-%y")
+  p4 = ggplot(data = oo, aes(x=date, y=long*yscaler, fill=age_band))+
+    facet_wrap(~scen,nrow = 1) +
+    theme_light()+
+    geom_area(position="stack",alpha=0.7)+#guides(fill=FALSE)+
+    theme(axis.title.x = element_blank(), 
+          text=element_text(size=textsize),
+          strip.text.x = element_text(size = textsize+1),
+          axis.text.x = element_text(angle = 45, hjust=1))+
+    ylab(paste("Long covid",ystr))+scale_x_date( date_breaks = "months",date_labels = "%b-%d")# +scale_x_date( date_labels = "%m-%y")
+  
+  
+  if (!is.null(stages)){
+    shade_phases <- data.frame(xstart=stages[c(TRUE,FALSE)], xend=stages[c(FALSE,TRUE)])
+    p1 <- p1 +   geom_rect(data = shade_phases, aes(xmin = xstart, xmax = xend, 
+                                                    ymin = -Inf, ymax = Inf), alpha = 0.15, inherit.aes=FALSE)
+    p2 <- p2 +    geom_rect(data = shade_phases, aes(xmin = xstart, xmax = xend, 
+                                                     ymin = -Inf, ymax = Inf), alpha = 0.15, inherit.aes=FALSE)
+    p3 <- p3 +     geom_rect(data = shade_phases, aes(xmin = xstart, xmax = xend, 
+                                                      ymin = -Inf, ymax = Inf), alpha = 0.15, inherit.aes=FALSE)
+    p4 <- p4 +   geom_rect(data = shade_phases, aes(xmin = xstart, xmax = xend, 
+                                                    ymin = -Inf, ymax = Inf), alpha = 0.15, inherit.aes=FALSE)
+    
+  }
+  
+  return(list(p1,p2,p3,p4))
+}
+
+
+
 
 plot_incid_data <- function(test1, bcdata = dat,headertext="BC",textsize=10) {
 o1=extract_inc_byvax(test1,includeExposed = F,reduceVac = T)
