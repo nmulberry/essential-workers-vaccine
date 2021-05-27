@@ -46,6 +46,8 @@ tmp = compare_sims(test1, test2,textsize = 10,
                    name1 = "July reopening", name2 = "Sept. reopening",scale_y = TRUE)
 ggarrange(plotlist = tmp[1:2], nrow=1)
 ggsave("reopen-july-sept-slowvax.pdf", height = 4, width = 12)
+
+
 # ----
 ascFrac=0.75
 textsize=12

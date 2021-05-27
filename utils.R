@@ -9,10 +9,14 @@ total_vaccinated = function(df){
   return(n)
 }
 
-total_deaths = function(df) {
+total_deaths = function(df,removeInit=TRUE) {
   # D compartments
  ind <- grep("D", names(df))
+ if (removeInit) {
+   n <- sum( tail(df,n=1)[,ind] - head(df, n=1)[,ind])
+   } else {  
  n <- sum(tail(df, n=1)[,ind])
+   }
  return(n)
 }
 
@@ -276,6 +280,14 @@ extract_incidence <- function(output,d_E= 1/3) {
   return(mydatC)
 }
 
+extract_incidence_noage <- function(output,d_E= 1/3) {
+  Es    = output[,grep("E", colnames(output))] # this is 27 columns of Es
+  L=ncol(Es)/3 # number of cols in each of E, Ev and Ex
+  # add them up. The incidence into I is those coming into I from E
+  incid =d_E*(Es[,1:L] +  Es[,(L+1):(2*L)] + Es[,(2*L+1):(3*L)])
+  allinc = rowSums(incid*yscaler)
+  return( allinc)
+}
 
 extract_totals <- function(output) {
   return( extract_cases_deaths(output) %>% group_by(time) %>%
@@ -382,6 +394,86 @@ vax_immunity = function(df){
 ######################
 # PLOTS
 #######################
+
+compare_incid <- function(sim1, sim2, name1="1", name2="2",
+                          legname = "Percent",
+                          startDate = ymd("2021-01-10"),scale_y=TRUE) {
+  yscaler = ifelse(scale_y == TRUE, 1e5/pop_total, 1)
+  ystr = ifelse(scale_y, "per 100K", "")
+  
+  d1=extract_cases_deaths(sim1) %>% group_by(time) %>%
+    summarise(incid = sum(incid), 
+              cases=sum(cases),
+              deaths = sum(deaths), 
+              hospitalizations = sum(hosp)) %>% 
+    mutate(date = time + ymd("2021-01-01"), scen=name1) 
+  d2=extract_cases_deaths(sim2) %>% group_by(time) %>%
+    summarise(incid = sum(incid),cases = sum(cases), 
+              deaths = sum(deaths), 
+              hospitalizations = sum(hosp)) %>% 
+    mutate(date = time + ymd("2021-01-01"), scen=name2)
+  thisdd = filter(rbind(d1,d2),date> ymd("2021-07-01"))
+p1=  ggplot(data = thisdd,
+         aes(x=date, y=incid*yscaler,color=scen))+
+    geom_line(size=1.3)+  
+  ylab(paste("Incidence", ystr))+
+  scale_x_date( date_breaks = "months",date_labels = "%b-%d")+
+   labs(color=legname)+theme(axis.title.x = element_blank())
+p2=  ggplot(data = thisdd,
+            aes(x=date, y=hospitalizations*yscaler,color=scen))+
+  geom_line(size=1.3)+  
+  ylab(paste("Hospitalizations", ystr))+
+  scale_x_date( date_breaks = "months",date_labels = "%b-%d")+
+  labs(color=legname)+theme(axis.title.x = element_blank())
+
+return(list(p1,p2, thisdd))                            
+    }
+
+
+
+compare_incid_ribbons <- function(sim1, sim2, name1="1", name2="2",
+                          legname = "Percent",
+                          startDate = ymd("2021-01-10"),scale_y=TRUE) {
+  yscaler = ifelse(scale_y == TRUE, 1e5/pop_total, 1)
+  ystr = ifelse(scale_y, "per 100K", "")
+  
+  d1=extract_cases_deaths(sim1) %>% group_by(time) %>%
+    summarise(incid = sum(incid), 
+              cases=sum(cases),
+              deaths = sum(deaths), 
+              hospitalizations = sum(hosp)) %>% 
+    mutate(date = time + ymd("2021-01-01"), scen=name1) 
+   d2=extract_cases_deaths(sim2) %>% group_by(time) %>%
+    summarise(incid = sum(incid),cases = sum(cases), 
+              deaths = sum(deaths), 
+              hospitalizations = sum(hosp)) %>% 
+    mutate(date = time + ymd("2021-01-01"), scen=name2)
+
+  thisdd = filter(rbind(d1,d2),date> ymd("2021-07-01"))
+
+  p1=  ggplot(data = thisdd,
+              aes(x=date, y=incid*yscaler,color=scen))+
+    geom_line(size=1.3)+  
+    ylab(paste("Incidence", ystr))+
+    scale_x_date( date_breaks = "months",date_labels = "%b-%d")+
+    labs(color=legname)+theme(axis.title.x = element_blank()) +
+    geom_ribbon(data = thisdd, aes(x=date, ymax = 1.2*incid*yscaler,
+                                   ymin = 0.8*incid*yscaler,
+                                   fill=scen),alpha=0.5, inherit.aes = F)
+                                   
+  p2=  ggplot(data = thisdd,
+              aes(x=date, y=hospitalizations*yscaler,color=scen))+
+    geom_line(size=1.3)+  
+    ylab(paste("Hospitalizations", ystr))+
+    scale_x_date( date_breaks = "months",date_labels = "%b-%d")+
+    labs(color=legname)+theme(axis.title.x = element_blank())
+  
+  return(list(p1,p2))                            
+}
+
+
+
+
 compare_sims <- function(sim1, sim2, name1="1", name2="2",
                              startDate = ymd("2021-01-10"), LCFAC=1,
                              stages=NULL,textsize=16, scale_y=TRUE) {
