@@ -230,7 +230,7 @@ run_over_scen_4 = function(R1, R2, R3, trytime,Tfinal=210,
                         u = u_var, num_days=T1, with_essential=TRUE, H=H) 
    
    # next stage: March/April:  R moves to R1 and rate increases. this goes for 60 days
-   n <-  0.004 # speedup*sum(age_demo[-9])/210
+   n <-  0.004*speedup
    T2=40
    C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
                               target_R0=R1, in_school=TRUE, alpha_factor=alpha)
@@ -240,7 +240,7 @@ run_over_scen_4 = function(R1, R2, R3, trytime,Tfinal=210,
                           u = u_var, num_days=T2, with_essential=TRUE, H=H)
    
    # third stage:  R moves to R2 < 1, vax rate is up. This is May onward
-   n <- 0.007
+   n <- 0.007*speedup
    C <- construct_C_from_prem(home=mu_home, work=mu_work, school=mu_school, other=mu_other, u=u_var,
                               target_R0=R2, in_school=TRUE, alpha_factor=alpha)
    df2 <- run_sim_restart(C, df_0=tail(df1, n=1), percent_vax =1.0, strategy= strategies[[scen]], num_perday=n,

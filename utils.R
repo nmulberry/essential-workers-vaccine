@@ -20,11 +20,28 @@ total_deaths = function(df,removeInit=TRUE) {
  return(n)
 }
 
-total_cases = function(df) {
+total_cases = function(df,removeInit=TRUE) {
   # R + D compartments
  ind <- grep("D|R", names(df))
- n <- sum(tail(df, n=1)[,ind])
+ if (removeInit) {
+   n <- sum( tail(df,n=1)[,ind] - head(df, n=1)[,ind])
+ } else {  
+   n <- sum(tail(df, n=1)[,ind])
+ }
  return(n)
+}
+
+total_hosp = function(df, ihr = IHR, hosp_efficacy=vp,removeInit=TRUE) {
+  ind = grep("R", names(df))
+  #   scalevec=c(IHR, (1-hosp_efficacy)*IHR, (1-hosp_efficacy)*IHR) 
+  scalevec=c(IHR, IHR, (1-hosp_efficacy)*IHR) # Rv are not protected by efficacy
+  if (removeInit) {
+    myvec <-  tail(df,n=1)[,ind] - head(df, n=1)[,ind]
+  } else {  
+    myvec <- tail(df, n=1)[,ind]
+  }
+    htot  <- scalevec*myvec
+  return(sum(htot))
 }
 
 
@@ -65,14 +82,6 @@ dd3 = data.frame(age_band =age_names,
                  hosp = as.numeric( (lastrow[ind3]-firstrow[ind3])*ihr*(1-hosp_efficacy)), 
                  Protection="Vaccinated but not protected") # vax unprot, by age 
 return(rbind(dd1,dd2,dd3))
-}
-
-total_hosp = function(df, ihr = IHR, hosp_efficacy=vp) {
-  ind = grep("R", names(df))
-#   scalevec=c(IHR, (1-hosp_efficacy)*IHR, (1-hosp_efficacy)*IHR) 
-    scalevec=c(IHR, IHR, (1-hosp_efficacy)*IHR) # Rv are not protected by efficacy
-  htot  <- scalevec*tail(df, n=1)[,ind]
-  return(sum(htot))
 }
 
 
